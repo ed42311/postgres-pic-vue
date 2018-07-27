@@ -13,8 +13,7 @@
           </thead>
           <tbody>
             <tr v-for="share in shares" :key="share.id">
-              <td><img id="img" height="20">
-              {{ (share.bikePic ? `data:image/jpeg;base64${share.bikePic}` : 'pic not there') }}
+              <td><img id="img" :src="(share.image ? share.image : 'pic not there')" height="20">
               </td>
               <td class="text-right">
                 <a href="#" @click.prevent="deleteShare(share.id)">Delete</a>
@@ -22,7 +21,7 @@
             </tr>
           </tbody>
         </table>
-        <img id="img" height="150"/>
+        <img id="img" :src="itemPreviewImage" height="150"/>
       </b-col>
       <b-col lg="3">
         <b-card :title="(model.id ? 'Edit Share ID#' + model.id : 'New Share')">
@@ -31,7 +30,7 @@
               <b-form-file
                 id="avatar" name="avatar"
                 @change ="uploadFile"
-                v-model="model.bikePic"
+                v-model="model.pic"
                 placeholder="Choose a file..."
                 accept="image/png, image/jpeg">
               </b-form-file>
@@ -48,7 +47,6 @@
 
 <script>
 import api from '@/api'
-import helpers from '@/helpers'
 export default {
   data () {
     return {
@@ -57,10 +55,19 @@ export default {
       selected: null,
       selectedFile: null,
       model: {},
+      itemPreviewImage: null
     }
   },
   async created () {
     this.refreshShares()
+  },
+  computed: {
+    imgURL () {
+      return this.item.image
+        ? 'data:image/png;charset=utf-8;base64,' + this.item.image
+        : '' // some default image
+
+    }
   },
   methods: {
     async refreshShares () {
@@ -87,14 +94,21 @@ export default {
       }
     },
     uploadFile () {
-      this.selectedFile = event.target.files[0]
-      console.log()
-      let FR = new FileReader()
-      FR.addEventListener('load', (evt) => {
-        this.model.bikePic = evt.target.result
-      })
-      FR.readAsDataURL(event.target.files[0])
-    }
+      const files = event.target.files || event.dataTransfer.files;
+      if (!files.length) return;
+      this.createImage(files[0]);
+    },
+    createImage(file) {
+      const image = new Image();
+      const reader = new FileReader();
+
+      reader.onload = evt => {
+        this.itemPreviewImage = evt.target.result
+        let b64str = evt.target.result.substr(evt.target.result.indexOf(',')+1, evt.target.result.length)
+        this.model.image = b64str
+      }
+      reader.readAsDataURL(file);
+    },
   }
 }
 </script>

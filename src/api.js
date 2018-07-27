@@ -14,6 +14,13 @@ export default {
       url: resource,
       data,
     }).then(req => {
+      if(req.data.length > 0){
+        req.data = req.data.map((d) =>{
+          let b64 = 'data:image/png;base64,' + d.image
+          d.image = b64
+          return d
+        })
+      }
       return req.data
     })
   },

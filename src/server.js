@@ -23,7 +23,10 @@ let sequelize = new Sequelize({
 })
 
 let Test = sequelize.define('tests', {
-  pic: Sequelize.BLOB
+  image: {
+    type: Sequelize.TEXT,
+    allowNull: true
+  }
 })
 
 epilogue.initialize({
@@ -31,30 +34,16 @@ epilogue.initialize({
   sequelize
 })
 
-// const shareMiddleware = {
-//   fetch: {
-//     before: function(req, res, context) {
-//       console.log("before")
-//       return context.continue;
-//     },
-//     action: function(req, res, context) {
-//       console.log("action")
-//       return context.continue;
-//     },
-//     after: function(req, res, context) {
-//       console.log("after")
-//       return context.continue;
-//     }
-//   }
-// };
-
 // Create the dynamic REST resource for our Share model
 let shareResource = epilogue.resource({
   model: Test,
   endpoints: ['/tests', '/tests/:id',]
 })
 
-// shareResource.use(shareMiddleware);
+shareResource.list.complete((req, res, context) => {
+  console.log(context)
+  return context.continue;
+})
 
 // Resets the database and launches the express app on :8081
 sequelize
